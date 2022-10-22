@@ -18,16 +18,17 @@
             ]
         },
         "id": {
-            "type": "integer",
-            "default": 0,
+            "type": "string",
+            "default": "0",
             "title": "The id Schema",
             "examples": [
-                12
+                "12"
             ]
         }
     },
+    "additionalProperties": false,
     "examples": [{
         "username": "testUser",
-        "id": 12
+        "id":"12"
     }]
 }

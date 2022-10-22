@@ -4,13 +4,14 @@
     "type": "object",
     "default": {},
     "title": "Root Schema",
+    "required": [],
     "properties": {
         "minSalary": {
-            "type": "integer",
-            "default": 0,
+            "type": "string",
+            "default": "0",
             "title": "The minSalary Schema",
             "examples": [
-                2000
+                "2000"
             ]
         },
         "hasEquity": {
@@ -30,8 +31,9 @@
             ]
         }
     },
+    "additionalProperties": false,
     "examples": [{
-        "minSalary": 2000,
+        "minSalary": "2000",
         "hasEquity": true,
         "title": "testing"
     }]

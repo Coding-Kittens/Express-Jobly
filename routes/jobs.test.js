@@ -17,6 +17,7 @@ beforeEach(commonBeforeEach);
 afterEach(commonAfterEach);
 afterAll(commonAfterAll);
 
+/////////////////////////////////////////////POST/
 describe("Test Create", () => {
   test("Test Create new job", async () => {
     let res = await request(app)
@@ -24,7 +25,7 @@ describe("Test Create", () => {
       .send({
         title: "testing",
         salary: 30,
-        equity: 2,
+        equity: 1,
         company_handle: "test",
       })
       .set("authorization", `Bearer ${u1Token}`);
@@ -34,7 +35,7 @@ describe("Test Create", () => {
         id: expect.any(Number),
         title: "testing",
         salary: 30,
-        equity: 2,
+        equity: "1",
         company_handle: "test",
       },
     });
@@ -47,19 +48,19 @@ describe("Test Create", () => {
       .send({
         title: "testing",
         salary: 30,
-        equity: 2,
+        equity: 1,
         company_handle: "test",
       })
       .set("authorization", `Bearer ${u2Token}`);
     expect(res.statusCode).toBe(401);
   });
 });
-
+/////////////////////////////////////////////PATCH/:id
 describe("Test Update", () => {
   test("Test update job by id", async () => {
     let res = await request(app)
       .patch("/jobs/345")
-      .send({ title: "testing", salary: 30, equity: 2 })
+      .send({ title: "testing", salary: 30, equity: 1 })
       .set("authorization", `Bearer ${u1Token}`);
 
     expect(res.body).toEqual({
@@ -67,7 +68,7 @@ describe("Test Update", () => {
         id: 345,
         title: "testing",
         salary: 30,
-        equity: 2,
+        equity: "1",
         company_handle: "test",
       },
     });
@@ -77,7 +78,7 @@ describe("Test Update", () => {
   test("Unauth for users", async () => {
     let res = await request(app)
       .patch("/jobs/345")
-      .send({ title: "testing", salary: 30, equity: 2 })
+      .send({ title: "testing", salary: 30, equity: 1 })
       .set("authorization", `Bearer ${u2Token}`);
     expect(res.statusCode).toBe(401);
   });
@@ -85,12 +86,12 @@ describe("Test Update", () => {
   test("Test update job by id should return 404 if job not found", async () => {
     let res = await request(app)
       .patch("/jobs/882")
-      .send({ title: "testing", salary: 30, equity: 2 })
+      .send({ title: "testing", salary: 30, equity: 1 })
       .set("authorization", `Bearer ${u1Token}`);
     expect(res.statusCode).toBe(404);
   });
 });
-
+/////////////////////////////////////////////GET/
 describe("Test Get", () => {
   test("Test find all", async () => {
     let res = await request(app).get("/jobs");
@@ -101,21 +102,21 @@ describe("Test Get", () => {
           id: 123,
           title: "nothing",
           salary: 4,
-          equity: 3,
+          equity: "1",
           company_handle: "test",
         },
         {
           id: 345,
           title: "nothing",
           salary: 15,
-          equity: 6,
+          equity: "1",
           company_handle: "test",
         },
       ],
     });
     expect(res.statusCode).toBe(200);
   });
-
+  /////////////////////////////////////////////GET/ w filter
   test("Test find with filter", async () => {
     let res = await request(app).get("/jobs/?minSalary=5");
 
@@ -125,14 +126,14 @@ describe("Test Get", () => {
           id: 345,
           title: "nothing",
           salary: 15,
-          equity: 6,
+          equity: "1",
           company_handle: "test",
         },
       ],
     });
     expect(res.statusCode).toBe(200);
   });
-
+  /////////////////////////////////////////////GET/:id
   test("Test get by id", async () => {
     let res = await request(app).get("/jobs/123");
 
@@ -141,7 +142,7 @@ describe("Test Get", () => {
         id: 123,
         title: "nothing",
         salary: 4,
-        equity: 3,
+        equity: "1",
         company_handle: "test",
       },
     });
@@ -153,7 +154,7 @@ describe("Test Get", () => {
     expect(res.statusCode).toBe(404);
   });
 });
-
+/////////////////////////////////////////////DELETE/:id
 describe("Test Delete", () => {
   test("Test delete by id", async () => {
     let res = await request(app)

@@ -108,7 +108,7 @@ describe("register", function () {
 
 describe("apply", () => {
   test("works apply", async () => {
-    result = await User.apply("u1", 123);
+    const result = await User.apply({username:"u1", id: 123});
     expect(result).toEqual({ applied: 123 });
   });
 });
@@ -148,6 +148,7 @@ describe("get", function () {
       lastName: "U1L",
       email: "u1@email.com",
       isAdmin: false,
+      jobs: [],
     });
   });
 

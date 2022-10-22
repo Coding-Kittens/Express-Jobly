@@ -86,7 +86,11 @@ class User {
             email,
             is_admin)
            VALUES ($1, $2, $3, $4, $5, $6)
-           RETURNING username, first_name AS "firstName", last_name AS "lastName", email, is_admin AS "isAdmin"`,
+           RETURNING username,
+           first_name AS "firstName",
+           last_name AS "lastName",
+           email,
+           is_admin AS "isAdmin"`,
       [username, hashedPassword, firstName, lastName, email, isAdmin]
     );
 
@@ -99,12 +103,12 @@ class User {
    *
    * Returns { applied: jobId }
    **/
-  static async apply(username, id) {
-    const result = await db.query(
-      `INSERT INTO applications(username,job_id) VALUES($1,$2)`[(username, id)]
-    );
-
-    return { applied: id };
+  static async apply({username, id}) {
+  const result = await db.query(
+    `INSERT INTO applications(username,job_id) VALUES($1,$2)`,
+    [username, id]
+  );
+  return { applied: id };
   }
 
   /** Find all users.
@@ -118,7 +122,7 @@ class User {
                   first_name AS "firstName",
                   last_name AS "lastName",
                   email,
-                  is_admin AS "isAdmin",
+                  is_admin AS "isAdmin"
            FROM users
            ORDER BY username`
     );
@@ -136,28 +140,35 @@ class User {
 
   static async get(username) {
     const userRes = await db.query(
-      `SELECT username,
+      `SELECT users.username,
                   first_name AS "firstName",
                   last_name AS "lastName",
                   email,
                   is_admin AS "isAdmin",
                   job_id
            FROM users
-           JOIN applications ON users.username=applications.username
-           WHERE username = $1`,
+           LEFT JOIN applications
+           ON users.username=applications.username
+           WHERE users.username = $1`,
       [username]
     );
+    if (userRes.rows.length === 0)
+      throw new NotFoundError(`No user: ${username}`);
+
     const { firstName, lastName, email, isAdmin } = userRes.rows[0];
+    let jobs;
+    userRes.rows.job_id
+      ? (jobs = userRes.rows.map((r) => job_id))
+      : (jobs = []);
+
     const user = {
       username,
       firstName,
       lastName,
       email,
       isAdmin,
-      jobs: userRes.rows.map((r) => job_id),
+      jobs,
     };
-
-    if (!user) throw new NotFoundError(`No user: ${username}`);
 
     return user;
   }

@@ -132,7 +132,7 @@ test("works for admins", async function () {
     .post("/users/u2/jobs/123")
     .set("authorization", `Bearer ${u1Token}`);
   expect(resp.statusCode).toEqual(201);
-  expect(resp.body).toEqual({ applied: id });
+  expect(resp.body).toEqual({ applied: "123" });
 });
 
 test("works for the user", async function () {
@@ -140,7 +140,7 @@ test("works for the user", async function () {
     .post("/users/u2/jobs/123")
     .set("authorization", `Bearer ${u2Token}`);
   expect(resp.statusCode).toEqual(201);
-  expect(resp.body).toEqual({ applied: id });
+  expect(resp.body).toEqual({ applied: "123" });
 });
 
 test("unauth for other users", async function () {
@@ -215,6 +215,7 @@ describe("GET /users/:username", function () {
         lastName: "U2L",
         email: "user2@user.com",
         isAdmin: false,
+        jobs: [],
       },
     });
   });
@@ -229,6 +230,7 @@ describe("GET /users/:username", function () {
         lastName: "U2L",
         email: "user2@user.com",
         isAdmin: false,
+        jobs: [],
       },
     });
   });
@@ -266,7 +268,7 @@ describe("PATCH /users/:username", () => {
     expect(resp.body).toEqual({
       user: {
         username: "u2",
-        firstName: "U2F",
+        firstName: "New",
         lastName: "U2L",
         email: "user2@user.com",
         isAdmin: false,
@@ -284,7 +286,7 @@ describe("PATCH /users/:username", () => {
     expect(resp.body).toEqual({
       user: {
         username: "u2",
-        firstName: "U2F",
+        firstName: "New",
         lastName: "U2L",
         email: "user2@user.com",
         isAdmin: false,

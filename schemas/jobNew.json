@@ -42,6 +42,7 @@
             ]
         }
     },
+    "additionalProperties": false,
     "examples": [{
         "title": "testing",
         "salary": 2000,

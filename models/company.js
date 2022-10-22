@@ -2,7 +2,7 @@
 
 const db = require("../db");
 const { BadRequestError, NotFoundError } = require("../expressError");
-const { sqlForPartialUpdate } = require("../helpers/sql");
+const { sqlForPartialUpdate,whereSqlForFilter } = require("../helpers/sql");
 
 /** Related functions for companies. */
 
@@ -43,6 +43,8 @@ class Company {
    *
    * matches filters if there are any
    *
+   *params ={name,minEmployees,maxEmployees}
+   *
    * Can filter by name, minEmployees and/or maxEmployees
    *
    * name is case-insensitive and can match any part of the string
@@ -54,10 +56,10 @@ class Company {
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
 
-  static async findAll(params = null) {
+  static async findAll(params = {}) {
     let companiesRes;
-    if (!params) {
-      companiesRes = await db.query(
+    if (Object.keys(params).length === 0) {
+        companiesRes = await db.query(
         `SELECT handle,
                     name,
                     description,
@@ -65,41 +67,29 @@ class Company {
                     logo_url AS "logoUrl"
              FROM companies
              ORDER BY name`
-      );
+        );
     } else {
-      const queryParams = [];
-      let where = "";
-      let num = 1;
-      if (params.name) {
-        where = `WHERE name ILIKE $1`;
-        queryParams.push(`%${params.name}%`);
-        num++;
-      }
-      if (params.minEmployees) {
-        where === ""
-          ? (where = `WHERE num_employees >= $1`)
-          : (where = `${where} AND num_employees >= $2`);
-        queryParams.push(params.minEmployees);
-        num++;
-      }
+        let paramsList =[];
+        if (params.name) paramsList.push({condition:'ILIKE',name:'name',value: `%${params.name}%`});
+        if (params.minEmployees) paramsList.push({condition:'>=',name:'num_employees',value: params.minEmployees});
+        if (params.maxEmployees) paramsList.push({condition:'<=',name:'num_employees',value: params.maxEmployees});
 
-      if (params.maxEmployees) {
-        where === ""
-          ? (where = `WHERE num_employees <= $1`)
-          : (where = `${where} AND num_employees <= $${num}`);
-        queryParams.push(params.maxEmployees);
-      }
+        const query = whereSqlForFilter(paramsList);
 
-      companiesRes = await db.query(
-        `SELECT handle,
-                     name,
-                     description,
-                     num_employees AS "numEmployees",
-                     logo_url AS "logoUrl"
-              FROM companies ${where}
-              ORDER BY name`,
-        queryParams
-      );
+        companiesRes = await db.query(
+          `SELECT handle,
+                       name,
+                       description,
+                       num_employees AS "numEmployees",
+                       logo_url AS "logoUrl"
+                FROM companies ${query.where}
+                ORDER BY name`,
+          query.queryParams
+        );
+    }
+
+    if (companiesRes.rows.length === 0) {
+      throw new NotFoundError();
     }
     return companiesRes.rows;
   }
@@ -122,33 +112,39 @@ class Company {
                   id,
                   title,
                   salary,
-                  equity,
-                  companyHandle
+                  equity
            FROM companies
-           JOIN jobs ON jobs.company_handle=companies.handle
+           LEFT JOIN jobs ON jobs.company_handle=companies.handle
            WHERE companies.handle = $1`,
       [handle]
     );
 
+    if (companyRes.rows.length === 0)
+      throw new NotFoundError(`No company: ${handle}`);
+
     const { name, description, numEmployees, logoUrl } = companyRes.rows[0];
+    let jobs;
+    if (companyRes.rows[0].id) {
+      jobs = companyRes.rows.map((r) => {
+        return {
+          id: r.id,
+          title: r.title,
+          salary: r.salary,
+          equity: r.equity,
+          handle,
+        };
+      });
+    } else {
+      jobs = [];
+    }
     const company = {
       handle: companyRes.rows[0].handle,
       name,
       description,
       numEmployees,
       logoUrl,
-      jobs: companyRes.rows.map((r) => {
-        return {
-          id: r.id,
-          title: r.title,
-          salary: r.salary,
-          equity: r.equity,
-          companyHandle: r.companyHandle,
-        };
-      }),
+      jobs,
     };
-
-    if (!company) throw new NotFoundError(`No company: ${handle}`);
 
     return company;
   }

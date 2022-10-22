@@ -5,7 +5,7 @@
 const jsonschema = require("jsonschema");
 const express = require("express");
 
-const { BadRequestError } = require("../expressError");
+const { BadRequestError, ExpressError } = require("../expressError");
 const { ensureAdmin } = require("../middleware/auth");
 const Company = require("../models/company");
 
@@ -52,16 +52,16 @@ router.post("/", ensureAdmin, async function (req, res, next) {
 
 router.get("/", async function (req, res, next) {
   try {
-    const validator = jsonschema.validate(req.params, companyFilterSchema);
-    if (validator) {
-      if (req.params.minEmployees <= req.params.maxEmployees) {
-        const companies = await Company.findAll(req.params);
-        return res.json({ companies });
+    const validator = jsonschema.validate(req.query, companyFilterSchema);
+    if (validator.valid) {
+      if (req.query.minEmployees > req.query.maxEmployees) {
+        throw new ExpressError(
+          "Min number of employees can not be greater than the max number of employees!",
+          400
+        );
       }
-      throw new ExpressError(
-        "Min number of employees can not be greater than the max number of employees!",
-        400
-      );
+      const companies = await Company.findAll(req.query);
+      return res.json({ companies });
     }
     const errs = validator.errors.map((e) => e.stack);
     throw new BadRequestError(errs);

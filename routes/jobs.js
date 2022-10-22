@@ -30,8 +30,9 @@ const router = new express.Router();
  */
 router.get("/", async (req, res, next) => {
   try {
-    if (jsonschema.validate(req.params, jobFilterSchema)) {
-      const result = await Job.findAll(req.params);
+    const validator = jsonschema.validate(req.query, jobFilterSchema)
+    if (validator.valid) {
+      const result = await Job.findAll(req.query);
       return res.json({ jobs: result });
     }
     const errs = validator.errors.map((e) => e.stack);
@@ -50,7 +51,7 @@ router.get("/", async (req, res, next) => {
  */
 router.get("/:id", async (req, res, next) => {
   try {
-    const result = await Job.get(res.params.id);
+    const result = await Job.get(req.params.id);
     return res.json({ job: result });
   } catch (e) {
     return next(e);
@@ -69,8 +70,9 @@ router.get("/:id", async (req, res, next) => {
  */
 router.post("/", ensureAdmin, async (req, res, next) => {
   try {
-    if (jsonschema.validate(res.body, jobNewSchema)) {
-      const result = await Job.add(res.body);
+    const validator = jsonschema.validate(req.body, jobNewSchema);
+    if (validator.valid) {
+      const result = await Job.add(req.body);
       return res.status(201).json({ job: result });
     }
     const errs = validator.errors.map((e) => e.stack);
@@ -91,9 +93,9 @@ router.post("/", ensureAdmin, async (req, res, next) => {
  */
 router.patch("/:id", ensureAdmin, async (req, res, next) => {
   try {
-    if (jsonschema.validate(res.body, jobUpdateSchema)) {
-      const { title, salary, equity } = res.body;
-      const result = await Job.update(res.params.id, { title, salary, equity });
+    const validator = jsonschema.validate(req.body, jobUpdateSchema);
+    if (validator.valid) {
+      const result = await Job.update(req.params.id, req.body);
       return res.json({ job: result });
     }
 
@@ -115,9 +117,11 @@ router.patch("/:id", ensureAdmin, async (req, res, next) => {
 
 router.delete("/:id", ensureAdmin, async (req, res, next) => {
   try {
-    const result = await Job.delete(res.params.id);
+    const result = await Job.delete(req.params.id);
     return res.json(result);
   } catch (e) {
     return next(e);
   }
 });
+
+module.exports = router;

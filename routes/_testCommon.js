@@ -1,5 +1,5 @@
 "use strict";
-// the beforeEach and afterEach methods that the tests have in common, creates information that mutiple tests use and ROLLs BACK the db
+
 const db = require("../db.js");
 const User = require("../models/user");
 const Company = require("../models/company");
@@ -67,10 +67,10 @@ async function commonBeforeAll() {
   });
   //useing query instead of Job.add() so that I know the ids
   await db.query(
-    `INSERT INTO jobs(id,title,salary,equity,company_handle) VALUES(123,"nothing",4,3,"test")`
+    `INSERT INTO jobs(id,title,salary,equity,company_handle) VALUES(123,'nothing',4,1,'test')`
   );
   await db.query(
-    `INSERT INTO jobs(id,title,salary,equity,company_handle) VALUES(345,"nothing",15,6,"test")`
+    `INSERT INTO jobs(id,title,salary,equity,company_handle) VALUES(345,'nothing',15,1,'test')`
   );
 }
 
@@ -86,8 +86,8 @@ async function commonAfterAll() {
   await db.end();
 }
 
-const u1Token = createToken({ username: "u1", isAdmin: false });
-const u2Token = createToken({ username: "u2", isAdmin: true });
+const u1Token = createToken({ username: "u1", isAdmin: true });
+const u2Token = createToken({ username: "u2", isAdmin: false });
 
 module.exports = {
   commonBeforeAll,

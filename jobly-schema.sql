@@ -17,6 +17,7 @@ CREATE TABLE users (
 );
 
 -- equity uses NUMERIC instead of FLOAT because NUMERIC is more exact
+--NUMERIC returns a string
 CREATE TABLE jobs (
   id SERIAL PRIMARY KEY,
   title TEXT NOT NULL,

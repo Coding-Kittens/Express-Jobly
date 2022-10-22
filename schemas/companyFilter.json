@@ -4,6 +4,7 @@
     "type": "object",
     "default": {},
     "title": "Root Schema",
+    "required": [],
     "properties": {
         "name": {
             "type": "string",
@@ -30,6 +31,7 @@
             ]
         }
     },
+    "additionalProperties": false,
     "examples": [{
         "name": "some Company Name",
         "minEmployees": 200,
